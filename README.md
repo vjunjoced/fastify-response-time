@@ -13,6 +13,8 @@ You could find some documentation at [W3C Server-Timing](https://www.w3.org/TR/s
 
 _If you need older Fastify version, use version 1.0.1 of this plugin_
 
+this is a test for the nestjs framework
+
 ## Install
 
 ``
