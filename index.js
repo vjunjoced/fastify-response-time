@@ -43,17 +43,10 @@ module.exports = fastifyPlugin((instance, opts, next) => {
   opts.header = opts.header || "X-Response-Time";
 
   // Hook to be triggered on request (start time)
-  instance.addHook("onRequest", (request, reply, next) => {
+  instance.addHook("onRequest", (req, res, next) => {
     // Store the start timer in nanoseconds resolution
-    // istanbul ignore next
-    if (request.req && reply.res) {
-      // support fastify >= v2
-      request.req[symbolRequestTime] = process.hrtime();
-      reply.res[symbolServerTiming] = {};
-    } else {
-      request[symbolRequestTime] = process.hrtime();
-      reply[symbolServerTiming] = {};
-    }
+    req[symbolRequestTime] = process.hrtime();
+    res[symbolServerTiming] = {};
 
     next();
   });
@@ -62,7 +55,7 @@ module.exports = fastifyPlugin((instance, opts, next) => {
   instance.addHook("onSend", (request, reply, payload, next) => {
 
     // check if Server-Timing need to be added
-    const serverTiming = reply.res[symbolServerTiming];
+    const serverTiming = reply[symbolServerTiming];
     const headers = [];
     for (const name of Object.keys(serverTiming)) {
       headers.push(serverTiming[name]);
@@ -72,9 +65,9 @@ module.exports = fastifyPlugin((instance, opts, next) => {
     }
 
     // Calculate the duration, in nanoseconds …
-    const hrDuration = process.hrtime(request.req[symbolRequestTime]);
+    const hrDuration = process.hrtime(request[symbolRequestTime]);
     // … convert it to milliseconds …
-    const duration = (hrDuration[0] * 1e3 + hrDuration[1] / 1e6).toFixed(opts.digits);
+    const duration = (hrDuration[0] * 1e3 + hrDuration[1] / 1e6).toFixed(opts.digits) + "ms";
     // … add the header to the response
     reply.header(opts.header, duration);
 
